@@ -19,6 +19,49 @@ namespace Enemies.System
         public abstract void GetAttacked();
         public abstract void Die();
 
+        private Animator animator;
+
+        public  Animator Animator
+        {
+            get
+            { 
+                if(animator == null)
+                {
+                    if(transform.GetComponent<Animator>() != null)
+                    {
+                        animator = transform.GetComponent<Animator>();
+                    }
+                    else
+                    {
+                        animator = transform.GetComponentInChildren<Animator>();
+                    }
+                    if(animator != null)
+                        Debug.Log("Animator founded");
+                }
+                return animator;
+            }
+            set {}
+        }
+
+
+        private PlayerController _player;
+        public PlayerController Player
+        {
+            get
+            {
+                if(_player == null)
+                {
+                    _player = FindObjectOfType<PlayerController>();
+                }
+                return _player;
+            }
+            set
+            {
+
+            }
+        }
+
+
         public float DistancePlayer(PlayerController player)
         {
             float playerPosX = player.transform.position.x;

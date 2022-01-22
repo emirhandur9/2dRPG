@@ -21,6 +21,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask canDedecte;
 
     public static Action<PlayerController> onPlayerAttack;
+
+    [SerializeField] private Transform[] bodyParts;
+
+    public List<Transform> upwards = new List<Transform>();
+    public List<Transform> downwards = new List<Transform>();
+    public Transform mostCloseUp;
+    public Transform mostCloseDown;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -38,30 +45,131 @@ public class PlayerController : MonoBehaviour
 
 
 
-
-
-
-        Collider2D dedected = Physics2D.OverlapCircle(transform.position, dedectorRadius, canDedecte);
-        if (dedected)
+        Collider2D[] dedected = Physics2D.OverlapCircleAll(transform.position, dedectorRadius, canDedecte);
+        upwards.Clear();
+        downwards.Clear();
+        mostCloseUp = null;
+        mostCloseDown = null;
+        if (dedected.Length > 1)
         {
-            if(dedected.transform.childCount > 0)
+            //Yukarýda olanlar ile aþaðýda olanlarý ayýr.
+
+            Debug.Log(dedected.Length + " kadar obje bulundu");
+            foreach (var item in dedected)
             {
-                if (dedected.transform.GetChild(0).name == "LayerLine")
+                if (item.transform.position.y < transform.position.y)
                 {
-                    if(transform.position.y < dedected.transform.GetChild(0).position.y)
+                    downwards.Add(item.transform);
+                }
+                else
+                {
+                    upwards.Add(item.transform);
+                }
+            }
+            Debug.Log("yukarý aþaðý sýralandý");
+            
+
+            if(upwards.Count > 0)
+            {
+                for (int i = 0; i < upwards.Count; i++)
+                {
+                    for (int j = 0; j < upwards.Count; j++)
                     {
-                        if (dedected.GetComponent<SpriteRenderer>().sortingOrder == 45) return;
-                        dedected.GetComponent<SpriteRenderer>().sortingOrder = 45;
-                    }
-                    else
-                    {
-                        if (dedected.GetComponent<SpriteRenderer>().sortingOrder == 55) return;
-                        dedected.GetComponent<SpriteRenderer>().sortingOrder = 55;
+                        if (i != j)
+                        {
+                            if (upwards[i].position.y < upwards[j].position.y)
+                            {
+                                if(j < i)
+                                {
+                                    Transform temp = upwards[i];
+                                    upwards[i] = upwards[j];
+                                    upwards[j] = temp;
+                                }
+                                
+                            }
+                        }
                     }
                 }
+                mostCloseUp = upwards[0];
+            }
+            
+            Debug.Log("yukarýlardan en yakýný bulundu");
+
+            if(downwards.Count > 0)
+            {
+                for (int i = 0; i < downwards.Count; i++)
+                {
+                    for (int j = 0; j < downwards.Count; j++)
+                    {
+                        if (i != j)
+                        {
+                            if (downwards[i].position.y < downwards[j].position.y)
+                            {
+                                if(i < j)
+                                {
+                                    Transform temp = downwards[i];
+                                    downwards[i] = downwards[j];
+                                    downwards[j] = temp;
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+                mostCloseDown = downwards[0];
             }
             
 
+            
+            Debug.Log("aþaðýlardan en yakýný bulundu");
+            if(mostCloseUp == null)
+            {
+                foreach (var item in bodyParts)
+                {
+                    item.GetComponent<SpriteRenderer>().sortingOrder = mostCloseDown.transform.GetComponent<SpriteRenderer>().sortingOrder - 5;
+                }
+            }
+            else if (mostCloseDown == null)
+            {
+                foreach (var item in bodyParts)
+                {
+                    item.GetComponent<SpriteRenderer>().sortingOrder = mostCloseUp.transform.GetComponent<SpriteRenderer>().sortingOrder + 5;
+                }
+            }
+            else
+            {
+                foreach (var item in bodyParts)
+                {
+                    item.GetComponent<SpriteRenderer>().sortingOrder = (mostCloseUp.transform.GetComponent<SpriteRenderer>().sortingOrder + mostCloseDown.transform.GetComponent<SpriteRenderer>().sortingOrder) / 2;
+                }
+            }
+            
+            Debug.Log("iþlem baþarýlý");
+
+        }
+        else if (dedected.Length == 1)
+        {
+            if (dedected[0].transform.childCount > 0)
+            {
+                if (dedected[0].transform.GetChild(0).name == "LayerLine")
+                {
+                    if (transform.position.y < dedected[0].transform.GetChild(0).position.y)
+                    {
+                        foreach (var item in bodyParts)
+                        {
+                            item.GetComponent<SpriteRenderer>().sortingOrder = dedected[0].transform.GetComponent<SpriteRenderer>().sortingOrder + 5;
+                        }
+                        
+                    }
+                    else
+                    {
+                        foreach (var item in bodyParts)
+                        {
+                            item.GetComponent<SpriteRenderer>().sortingOrder = dedected[0].transform.GetComponent<SpriteRenderer>().sortingOrder - 5;
+                        }
+                    }
+                }
+            }
         }
     }
 

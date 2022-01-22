@@ -11,24 +11,31 @@ namespace Enemies.System
         public abstract void Anger();
 
 
-        /*public override float Health { get; set; }
-        public override float AngerRange { get; set; }
-        public override float Power { get; set; }
-
-        public override void Attack()
+        public void PlayerDedection(PlayerController player)
         {
+            float distance = DistancePlayer(player);
 
+            if (distance < AngerRange)
+            {
+                if (distance < AttackRange)
+                {
+                    if (!isAttacking)
+                    {
+                        isAttacking = true;
+                        StartCoroutine(Attack());
+                    }
+                }
+                else
+                {
+                    Anger();
+                    isAttacking = false;
+
+                }
+
+            }
         }
 
-        public override void Die()
-        {
-
-        }
-
-        public override void PlayerDedection()
-        {
-
-        }*/
+        
     }
 }
 
